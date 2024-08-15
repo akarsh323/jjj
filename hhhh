@@ -1,0 +1,43 @@
+const chromadb = require('chromadb'); // Import ChromaDB client
+
+// Step 1: Connect to ChromaDB
+const client = new chromadb.Client();
+const collection = client.createCollection('books_collection');
+
+// Step 2: Define book data
+const books = [
+  { id: '1', title: 'Book A', rating: 4.5 },
+  { id: '2', title: 'Book B', rating: 3.8 },
+  { id: '3', title: 'Book C', rating: 4.2 },
+  // Add more books as needed
+];
+
+// Step 3: Create the query term as a constant
+const queryTerm = 4.2; // The rating to compare
+
+// Step 4: Convert ratings to strings and generate embeddings
+const booksExperience = books.map(book => book.rating.toString());
+
+// Step 5: Add books and their embeddings to ChromaDB
+books.forEach(book => {
+  collection.add({
+    ids: [book.id],
+    documents: [book.title], // You can store additional information here
+    embeddings: [book.rating.toString()] // Store the rating as a string
+  });
+});
+
+// Step 6: Query ChromaDB for similar ratings
+async function findSimilarBooks(query) {
+  const queryEmbedding = query.toString(); // Convert the query rating to a string
+
+  const results = await collection.query({
+    query_embeddings: [queryEmbedding],
+    n_results: 3 // Number of results to return
+  });
+
+  console.log('Similar books:', results);
+}
+
+// Execute the query
+findSimilarBooks(queryTerm);
